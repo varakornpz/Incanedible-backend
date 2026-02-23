@@ -3,6 +3,8 @@ package providers
 import (
 	"os"
 	"reflect"
+	"strconv"
+
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
 )
@@ -16,6 +18,12 @@ type Config struct {
 	GGRedirectUrl	string	`validate:"required"`
 	GGAfterSigninRedirect	string	`validate:"required"`
 	FrontendErrPage		string	`validate:"required"`
+	COOKIEDomain	string	`validate:"required"`
+	MQTTQos		byte		`validate:"required"`
+	MQTTBroker	string	`validate:"required"`
+	MQTTTopicPrefix		string		`validate:"required"`
+	MQTTUsername	string		`validate:"required"`
+	MQTTPassword	string		`validate:"required"`
 }
 
 var AppConf	*Config
@@ -26,6 +34,14 @@ func InitAppConf(){
 		log.Info().Msg("No .env file found, using system environment variables")
     }
 
+	mqttQosStr := os.Getenv("MQTT_QOS")
+	var mqttQos byte
+	mqttQosInted, qosErr := strconv.Atoi(mqttQosStr)
+	if qosErr != nil {
+		log.Fatal().Err(qosErr).Msg("MQTT_QOS must be a valid integer")
+	}
+	mqttQos = byte(mqttQosInted)
+
 	AppConf = &Config{
 		JWTSecret: os.Getenv("JWT_SECRET"),
 		DBDsn: os.Getenv("DB_DSN"),
@@ -33,7 +49,13 @@ func InitAppConf(){
 		GGClientID: os.Getenv("GOOGLE_CLIENT_ID"),
 		GGRedirectUrl: os.Getenv("GOOGLE_REDIRECT_URL"),
 		GGAfterSigninRedirect: os.Getenv("GOOGLE_AFTER_SIGNIN_REDIRECT"),
-		FrontendErrPage: os.Getenv("FE_ERROR_PAGE"),
+		FrontendErrPage: os.Getenv("FE_ERROR_PAGE") ,
+		COOKIEDomain: os.Getenv("COOKIE_DOMAIN"),
+		MQTTQos: mqttQos ,
+		MQTTBroker: os.Getenv("MQTT_BROKER"),
+		MQTTTopicPrefix: os.Getenv("MQTT_TOPIC_PREFIX"),
+		MQTTUsername: os.Getenv("MQTT_USERNAME"),
+		MQTTPassword: os.Getenv("MQTT_PASSWORD"),
 		
 	}
 
@@ -41,16 +63,12 @@ func InitAppConf(){
 	t := v.Type()
 	for i := 0 ; i < v.NumField() ; i++ {
 		field := t.Field(i)
-		val	:= v.Field(i).Interface()
+		fieldVal	:= v.Field(i)
 
 		validateTag	:= field.Tag.Get("validate")
 		
 		if validateTag == "required" {
-			valStringed	, ok := val.(string)
-			if !ok {
-				log.Fatal().Msg("Cant convert intterface to string called by providers/config.go")
-			}
-			if valStringed == ""{
+			if fieldVal.IsZero() {
 				log.Fatal().Msgf("Missing required ENV: %s called by providers/config.go", field.Name)
 			}
 		}

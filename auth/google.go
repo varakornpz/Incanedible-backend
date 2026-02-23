@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v3"
-	"github.com/varakornpz/gorm"
+	"github.com/varakornpz/mygorm"
 	"github.com/varakornpz/models"
 	"github.com/varakornpz/providers"
 
@@ -83,12 +83,12 @@ func GoogleAuthCallBack(c fiber.Ctx) error{
     }
 
 	var currentUser models.User
-	user , getUserErr := gorm.GetUserByEmail(email)
+	user , getUserErr := mygorm.GetUserByEmail(email)
 	if getUserErr != nil {
 		currentUser.Email = email
 		currentUser.Name  = name
 		currentUser.ProfilePic = profileImage
-		gorm.PutNewUser(&currentUser)
+		mygorm.PutNewUser(&currentUser)
 	}else{
 		currentUser = user
 	}
@@ -111,7 +111,7 @@ func GoogleAuthCallBack(c fiber.Ctx) error{
 			Secure:  	 true,
 			SameSite: 	"Lax",
 			Path:     	"/",
-			Domain: ".varakorn.net",
+			Domain: providers.AppConf.COOKIEDomain,
 		})
 	return c.Redirect().Status(fiber.StatusTemporaryRedirect).To(providers.AppConf.GGAfterSigninRedirect)
 }

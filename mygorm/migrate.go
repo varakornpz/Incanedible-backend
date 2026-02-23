@@ -1,4 +1,4 @@
-package gorm
+package mygorm
 
 import (
 	"github.com/rs/zerolog/log"

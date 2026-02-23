@@ -1,4 +1,4 @@
-package gorm
+package mygorm
 
 import (
 	"github.com/google/uuid"
@@ -18,6 +18,18 @@ func GetUserByUUID(uuid uuid.UUID) (models.User , error){
 	result := DB.First(&user , "uuid = ?" , uuid)
 
 	return user , result.Error
+}
+
+func GetCanesByUUID(uuid uuid.UUID)(models.RegisteredCanes , error){
+	var result struct {
+        Canes models.RegisteredCanes `gorm:"column:registered_canes"` 
+    }
+
+	dbResult := DB.Model(&models.User{}).
+        Select("registered_canes").
+        Where("uuid = ?", uuid).
+        First(&result)
+	return  result.Canes , dbResult.Error
 }
 
 
