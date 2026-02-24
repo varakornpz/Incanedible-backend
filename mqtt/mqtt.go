@@ -21,7 +21,7 @@ func InitMQTT() {
 	opts.AddBroker(providers.AppConf.MQTTBroker + ":1883")
 	opts.SetUsername(providers.AppConf.MQTTUsername)
 	opts.SetPassword(providers.AppConf.MQTTPassword)
-	opts.SetClientID("go_fiber_backend")
+	opts.SetClientID(providers.AppConf.MQTTClientID)
 	opts.SetAutoReconnect(true)
 
 	opts.OnConnect = func(c mqtt.Client) {
