@@ -24,6 +24,7 @@ type Config struct {
 	MQTTTopicPrefix		string		`validate:"required"`
 	MQTTUsername	string		`validate:"required"`
 	MQTTPassword	string		`validate:"required"`
+	MQTTClientID	string		`validate:"required"`
 }
 
 var AppConf	*Config
@@ -56,6 +57,7 @@ func InitAppConf(){
 		MQTTTopicPrefix: os.Getenv("MQTT_TOPIC_PREFIX"),
 		MQTTUsername: os.Getenv("MQTT_USERNAME"),
 		MQTTPassword: os.Getenv("MQTT_PASSWORD"),
+		MQTTClientID: os.Getenv("MQTT_CLIENT_ID"),
 		
 	}
 
