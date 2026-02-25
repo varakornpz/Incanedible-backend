@@ -43,6 +43,12 @@ func main(){
 		SigningKey: jwtware.SigningKey{Key: []byte(providers.AppConf.JWTSecret)},
 		Extractor : extractors.FromCookie("access_token") ,
 		ErrorHandler: func (c fiber.Ctx , err error) error {
+			if err.Error() == "value not found" {
+				return c.Status(fiber.ErrUnauthorized.Code).JSON(fiber.Map{
+					"msg" : "Token not found" ,
+					"ok" : false ,
+				})
+			}
 			log.Error().Msgf("JWT Authentication Failed: %v", err)
 			return c.SendStatus(fiber.ErrUnauthorized.Code)
 		},
