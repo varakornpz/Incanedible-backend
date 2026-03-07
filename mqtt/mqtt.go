@@ -3,12 +3,14 @@
 package mqtt
 
 import (
-
+	"encoding/json"
+	"strings"
 	"sync"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/rs/zerolog/log"
 	"github.com/varakornpz/providers"
+	myredis "github.com/varakornpz/redis"
 )
 
 var (
@@ -32,15 +34,25 @@ func InitMQTT() {
 		log.Warn().Msgf("Connect lost: %v", err)
 	}
 
-	mqttClient = mqtt.NewClient(opts)
-	if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
+	Client = mqtt.NewClient(opts)
+	if token := Client.Connect(); token.Wait() && token.Error() != nil {
 		log.Fatal().Msgf("%s" , token.Error())
 	}
 
 	Handler = &MQTTSubscibeHandler{
         clients: make(map[string]map[chan string]bool),
-        mqttCli: mqttClient,
+        mqttCli: Client,
     }
+
+	locationTopic := providers.AppConf.MQTTTopicPrefix + "/+/location"
+
+	if token := Client.Subscribe(locationTopic, providers.AppConf.MQTTQos, Handler.handleMQTTMessage); token.Wait() && token.Error() != nil {
+		log.Error().Msgf("ไม่สามารถ Subscribe Location ได้: %v", token.Error())
+	} else {
+		log.Info().Msgf("เริ่มดักฟัง Location ตลอดเวลาที่ Topic: %s", locationTopic)
+	}
+
+	go SubscribeFall()
 
 	log.Info().Msg("MQTT Subscription Handler Initialized")
 }
@@ -86,6 +98,37 @@ func (sm *MQTTSubscibeHandler) RemoveClient(topic string, ch chan string) {
 func (sm *MQTTSubscibeHandler) handleMQTTMessage(client mqtt.Client, msg mqtt.Message) {
 	topic := msg.Topic()
 	payload := string(msg.Payload())
+
+
+
+	if strings.HasSuffix(topic , "/location"){
+		parts := strings.Split(topic, "/")
+
+
+		if len(parts) < 3 {
+			log.Warn().Msgf("Topic error recieve incorect format : %s" , topic)
+			return
+		}else{
+
+			caneID := parts[1]
+
+			var jsonPayload myredis.LatestCaneLocation
+
+			jsonErr := json.Unmarshal(msg.Payload() , &jsonPayload)
+
+			if jsonErr != nil {
+				log.Error().Msgf("Cant Unmarshal payload,format may not correct : %v" , payload)
+			}else{
+				go func(){
+					err := myredis.PutCaneAddress(caneID , jsonPayload)
+
+					if err != nil {
+						log.Error().Msgf("Redis background error : %v" , err)
+					}
+				}()
+			}
+		}
+	}
 
 	sm.mu.RLock()
 	defer sm.mu.RUnlock()

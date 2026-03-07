@@ -25,6 +25,9 @@ type Config struct {
 	MQTTUsername	string		`validate:"required"`
 	MQTTPassword	string		`validate:"required"`
 	MQTTClientID	string		`validate:"required"`
+	LINECHANNELSC	string		`validate:"required"`
+	LINECHANNELACC	string		`validate:"required"`
+	REDISADDRESS	string		`validate:"required"`
 }
 
 var AppConf	*Config
@@ -58,6 +61,9 @@ func InitAppConf(){
 		MQTTUsername: os.Getenv("MQTT_USERNAME"),
 		MQTTPassword: os.Getenv("MQTT_PASSWORD"),
 		MQTTClientID: os.Getenv("MQTT_CLIENT_ID"),
+		LINECHANNELSC: os.Getenv("LINE_CHANNEL_SECRET"),
+		LINECHANNELACC: os.Getenv("LINE_CHANNEL_ACCESS"),
+		REDISADDRESS: os.Getenv("REDIS_ADDRESS"),
 		
 	}
 

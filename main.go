@@ -7,14 +7,17 @@ import (
 	"github.com/gofiber/contrib/v3/websocket"
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/extractors"
+
 	// "github.com/golang-jwt/jwt/v5"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/varakornpz/auth"
+	myline "github.com/varakornpz/line"
 	"github.com/varakornpz/mqtt"
 	"github.com/varakornpz/myapp"
 	"github.com/varakornpz/mygorm"
 	"github.com/varakornpz/providers"
+	myredis "github.com/varakornpz/redis"
 	"github.com/varakornpz/utils"
 )
 
@@ -22,8 +25,10 @@ import (
 
 func main(){
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-
+	//Provider must be on the top
 	providers.InitAppConf()
+	myredis.InitRedis()
+	myline.InitLine()
 	auth.InitGoogleAuthConf()
 
 	app := fiber.New()
@@ -87,8 +92,7 @@ func main(){
 	mygorm.InitDB()
 
 	
-
-	
+	myline.BroadCastToLine("Hello init")
 
 	app.Listen(":3334")
 }

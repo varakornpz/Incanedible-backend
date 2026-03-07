@@ -5,7 +5,6 @@ import (
     "time"
 	"gorm.io/gorm"
     "encoding/json"
-    // "github.com/lib/pq"
     "github.com/google/uuid"
     "database/sql/driver"
     "errors"
