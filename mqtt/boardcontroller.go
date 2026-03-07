@@ -1,14 +1,12 @@
 package mqtt
 
 import (
-	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog/log"
 	"github.com/varakornpz/providers"
 	"github.com/varakornpz/utils"
 )
 
-var mqttClient mqtt.Client
 
 
 func CommandHandler(c fiber.Ctx) error {
@@ -48,7 +46,7 @@ func CommandHandler(c fiber.Ctx) error {
 
 	text := payload.Action
 
-	token := mqttClient.Publish(topic , 0  ,false , text)
+	token := Client.Publish(topic , 0  ,false , text)
 	token.Wait()
 
 	return c.JSON(fiber.Map{
