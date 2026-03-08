@@ -8,7 +8,7 @@ import (
 	"github.com/varakornpz/utils"
 )
 
-func GetLocation(c *websocket.Conn) {
+func GetSoundAndLight(c *websocket.Conn) {
     rawUUID := c.Locals("uuid")
     caneID := c.Query("cane_id")
     if caneID == "" {
@@ -48,7 +48,7 @@ func GetLocation(c *websocket.Conn) {
     }
 
 
-    topic := "b6810503897/" + caneID + "/location"
+    topic := "b6810503897/" + caneID + "/soundandlight"
 
 
     msgChan := make(chan string, 50) 

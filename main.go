@@ -85,6 +85,7 @@ func main(){
 
 
 	mainAppSocketRoute.Get("/getlocation" , websocket.New(myapp.GetLocation))
+	mainAppSocketRoute.Get("/getsl" , websocket.New(myapp.GetSoundAndLight))
 
 	mainAppRoute.Get("/me" , myapp.GetUserData)
 

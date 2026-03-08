@@ -16,6 +16,7 @@ import (
 var (
     Client  mqtt.Client
     Handler *MQTTSubscibeHandler
+	SoundLightChan = make(chan string, 100)
 )
 
 func InitMQTT() {
@@ -45,12 +46,18 @@ func InitMQTT() {
     }
 
 	locationTopic := providers.AppConf.MQTTTopicPrefix + "/+/location"
-
 	if token := Client.Subscribe(locationTopic, providers.AppConf.MQTTQos, Handler.handleMQTTMessage); token.Wait() && token.Error() != nil {
 		log.Error().Msgf("ไม่สามารถ Subscribe Location ได้: %v", token.Error())
 	} else {
 		log.Info().Msgf("เริ่มดักฟัง Location ตลอดเวลาที่ Topic: %s", locationTopic)
 	}
+
+	soundLightTopic := providers.AppConf.MQTTTopicPrefix + "/+/soundandlight"
+    if token := Client.Subscribe(soundLightTopic, providers.AppConf.MQTTQos, Handler.handleMQTTMessage); token.Wait() && token.Error() != nil {
+        log.Error().Msgf("ไม่สามารถ Subscribe Sound & Light ได้: %v", token.Error())
+    } else {
+        log.Info().Msgf("เริ่มดักฟัง Sound & Light ตลอดเวลาที่ Topic: %s", soundLightTopic)
+    }
 
 	go SubscribeFall()
 
@@ -130,12 +137,10 @@ func (sm *MQTTSubscibeHandler) handleMQTTMessage(client mqtt.Client, msg mqtt.Me
 		}
 	}
 
+	
+
 	sm.mu.RLock()
 	defer sm.mu.RUnlock()
-
-
-
-
 	for ch := range sm.clients[topic] {
 		select {
 		case ch <- payload:
