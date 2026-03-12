@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"strings"
 	"sync"
+	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/rs/zerolog/log"
@@ -21,14 +22,40 @@ var (
 
 func InitMQTT() {
 	opts := mqtt.NewClientOptions()
+
+	opts.SetConnectRetry(true)
+	opts.SetConnectRetryInterval(5 * time.Second)
+	opts.SetAutoReconnect(true)
+	opts.SetMaxReconnectInterval(10 * time.Second)
+	opts.SetConnectTimeout(30 * time.Second)
+	opts.SetKeepAlive(60 * time.Second)
+	opts.SetPingTimeout(15 * time.Second)
+
 	opts.AddBroker(providers.AppConf.MQTTBroker + ":1883")
 	opts.SetUsername(providers.AppConf.MQTTUsername)
 	opts.SetPassword(providers.AppConf.MQTTPassword)
 	opts.SetClientID(providers.AppConf.MQTTClientID)
-	opts.SetAutoReconnect(true)
+
+	Handler = &MQTTSubscibeHandler{
+		clients: make(map[string]map[chan string]bool),
+	}
 
 	opts.OnConnect = func(c mqtt.Client) {
-		log.Info().Msg("Connected to MQTT Broker")
+		log.Info().Msg("Connected to MQTT Broker. Subscribing to topics...")
+
+		locationTopic := providers.AppConf.MQTTTopicPrefix + "/+/location"
+		if token := c.Subscribe(locationTopic, providers.AppConf.MQTTQos, Handler.handleMQTTMessage); token.Wait() && token.Error() != nil {
+			log.Error().Msgf("ไม่สามารถ Subscribe Location ได้: %v", token.Error())
+		} else {
+			log.Info().Msgf("เริ่มดักฟัง Location ตลอดเวลาที่ Topic: %s", locationTopic)
+		}
+
+		soundLightTopic := providers.AppConf.MQTTTopicPrefix + "/+/soundandlight"
+		if token := c.Subscribe(soundLightTopic, providers.AppConf.MQTTQos, Handler.handleMQTTMessage); token.Wait() && token.Error() != nil {
+			log.Error().Msgf("ไม่สามารถ Subscribe Sound & Light ได้: %v", token.Error())
+		} else {
+			log.Info().Msgf("เริ่มดักฟัง Sound & Light ตลอดเวลาที่ Topic: %s", soundLightTopic)
+		}
 	}
 
 	opts.OnConnectionLost = func(c mqtt.Client, err error) {
@@ -37,31 +64,14 @@ func InitMQTT() {
 
 	Client = mqtt.NewClient(opts)
 	if token := Client.Connect(); token.Wait() && token.Error() != nil {
-		log.Fatal().Msgf("%s" , token.Error())
+		log.Fatal().Msgf("Failed to connect MQTT: %s", token.Error())
 	}
 
-	Handler = &MQTTSubscibeHandler{
-        clients: make(map[string]map[chan string]bool),
-        mqttCli: Client,
-    }
-
-	locationTopic := providers.AppConf.MQTTTopicPrefix + "/+/location"
-	if token := Client.Subscribe(locationTopic, providers.AppConf.MQTTQos, Handler.handleMQTTMessage); token.Wait() && token.Error() != nil {
-		log.Error().Msgf("ไม่สามารถ Subscribe Location ได้: %v", token.Error())
-	} else {
-		log.Info().Msgf("เริ่มดักฟัง Location ตลอดเวลาที่ Topic: %s", locationTopic)
-	}
-
-	soundLightTopic := providers.AppConf.MQTTTopicPrefix + "/+/soundandlight"
-    if token := Client.Subscribe(soundLightTopic, providers.AppConf.MQTTQos, Handler.handleMQTTMessage); token.Wait() && token.Error() != nil {
-        log.Error().Msgf("ไม่สามารถ Subscribe Sound & Light ได้: %v", token.Error())
-    } else {
-        log.Info().Msgf("เริ่มดักฟัง Sound & Light ตลอดเวลาที่ Topic: %s", soundLightTopic)
-    }
+	Handler.mqttCli = Client
 
 	go SubscribeFall()
 
-	log.Info().Msg("MQTT Subscription Handler Initialized")
+	log.Info().Msg("MQTT Subscription Handler Initialized Successfully")
 }
 
 type MQTTSubscibeHandler struct {
