@@ -82,18 +82,20 @@ func main(){
 
 		return c.Next()
 	})
-
-
 	mainAppSocketRoute.Get("/getlocation" , websocket.New(myapp.GetLocation))
 	mainAppSocketRoute.Get("/getsl" , websocket.New(myapp.GetSoundAndLight))
+	log.Warn().Msg("Main app web socket created.")
+
+
 
 	mainAppRoute.Get("/me" , myapp.GetUserData)
 
 
 	mygorm.InitDB()
+	log.Warn().Msgf("DB init passed.")
 
 	
-	myline.BroadCastToLine("Hello init")
+	//myline.BroadCastToLine("Hello init")
 
 	app.Listen(":3000")
 }
