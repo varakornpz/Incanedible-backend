@@ -26,13 +26,3 @@ jobs :
         run: |
           docker build -t ${{ secrets.REGISTRY_IP }}:5000/incanedible-be:latest .
           docker push ${{ secrets.REGISTRY_IP }}:5000/incanedible-be:latest
-      - name: ssh to run docker file
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /home/varakorn/incanedible
-            docker compose pull
-            docker compose up -d

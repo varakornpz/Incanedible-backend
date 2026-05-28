@@ -27,6 +27,17 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+
+  watchtower:
+    image:  nicholas-fedor/watchtower:latest
+    container_name: watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 60 incanedible-be 
+    
+
+    
 volumes:
   incanedible_pg:
     external: true
