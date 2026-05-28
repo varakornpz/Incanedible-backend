@@ -68,6 +68,10 @@ func main(){
 
 	mainAppRoute.Post("/action" , mqtt.CommandHandler)
 
+	mainAppRoute.Get("/me" , myapp.GetUserData)
+
+	log.Warn().Msg("Main app route created.")
+
 	mainAppSocketRoute := mainAppRoute.Group("/socket")
 
 	mainAppSocketRoute.Use("/" , func(c fiber.Ctx) error {
@@ -85,10 +89,6 @@ func main(){
 	mainAppSocketRoute.Get("/getlocation" , websocket.New(myapp.GetLocation))
 	mainAppSocketRoute.Get("/getsl" , websocket.New(myapp.GetSoundAndLight))
 	log.Warn().Msg("Main app web socket created.")
-
-
-
-	mainAppRoute.Get("/me" , myapp.GetUserData)
 
 
 	mygorm.InitDB()

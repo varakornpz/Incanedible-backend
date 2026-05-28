@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v3"
-	"github.com/varakornpz/providers"
+	//"github.com/varakornpz/providers"
 )
 
 func genCSRFToken(c fiber.Ctx) string {
@@ -19,7 +19,7 @@ func genCSRFToken(c fiber.Ctx) string {
 			Value:    state,
 			Expires:  time.Now().Add(10 * time.Minute),
 			Path:     "/", 
-        	Domain:   providers.AppConf.COOKIEDomain,
+        	Domain:   ".varakorn.net",
 			HTTPOnly: true,
 			SameSite: "Lax",
 			Secure:   false,
