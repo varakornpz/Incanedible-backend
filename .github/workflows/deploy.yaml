@@ -1,4 +1,4 @@
-name: Deply to lab1 via tailscale
+name: Deploy to prod server
 
 on:
   push:
@@ -11,13 +11,13 @@ jobs :
       - name: get lattest code
         uses: actions/checkout@v4
 
-      - name:  go into tailscale VPN
+      - name:  go into tailscale network
         uses: tailscale/github-action@v4
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: tag:ci 
-      - name: setting for get local repo
+      - name: setting up for push to non ssl local repo
         run: |
           echo '{"insecure-registries": ["${{ secrets.REGISTRY_IP }}:5000"]}' | sudo tee /etc/docker/daemon.json
           sudo systemctl restart docker

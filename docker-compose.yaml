@@ -29,7 +29,7 @@ services:
       - .env
 
   watchtower:
-    image:  nicholas-fedor/watchtower:latest
+    image:  nickfedor/watchtower:latest
     container_name: watchtower
     restart: unless-stopped
     volumes:
