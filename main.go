@@ -95,5 +95,5 @@ func main(){
 	
 	myline.BroadCastToLine("Hello init")
 
-	app.Listen(":3334")
+	app.Listen(":3000")
 }

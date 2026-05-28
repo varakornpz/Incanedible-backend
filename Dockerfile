@@ -21,7 +21,7 @@ WORKDIR /root/
 
 COPY --from=builder /app/fiber-app .
 
-EXPOSE 3334
+EXPOSE 3000
 
 CMD ["./fiber-app"]
 

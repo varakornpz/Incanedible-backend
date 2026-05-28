@@ -1,3 +1,5 @@
+
+#Env file
 .env
 .env.*
-docker-compose.yaml
+!.env.example

@@ -1,0 +1,38 @@
+services:
+  api:
+    image: 100.104.122.126:5000/incanedible-be:latest
+    restart: unless-stopped
+    container_name: incanedible-be
+    env_file:
+      - .env
+    networks:
+      - default
+      - proxy-tier
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:18.3-alpine3.23
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "5434:5432"
+    volumes:
+      - incanedible_pg:/var/lib/postgresql
+
+  redis:
+    image: redis:8.6-alpine
+    restart: unless-stopped
+    env_file:
+      - .env
+volumes:
+  incanedible_pg:
+    external: true
+
+networks:
+  proxy-tier:
+    external: true
+    name: proxy-tier
+      
